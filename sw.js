@@ -1,4 +1,4 @@
-const CACHE = "dof-grip-v3";
+const CACHE = "dof-grip-v4";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,8 @@ const ASSETS = [
   "./apple-touch-icon.png",
   "./icon-192.png",
   "./icon-512.png",
+  "./mira.svg",
+  "./mira.pdf",
   "./fonts/IBMPlexMono-Regular.woff",
   "./fonts/IBMPlexMono-SemiBold.woff",
 ];
