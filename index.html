@@ -247,11 +247,11 @@
     .val.md { font-size: 1.12rem; color: var(--fg-bright); }
     .val.inf { letter-spacing: 0; }
 
-    .visual { margin: 12px 0 10px; }
-    .track-wrap { position: relative; height: 36px; }
+    .visual { margin: 12px 0 8px; }
+    .track-wrap { position: relative; height: 42px; }
     .track {
       position: absolute;
-      left: 0; right: 0; top: 16px;
+      left: 0; right: 0; top: 18px;
       height: 6px;
       border-radius: 99px;
       background: var(--input);
@@ -267,15 +267,7 @@
       border-radius: 99px;
       box-shadow: none;
     }
-    .cam, .mark { position: absolute; top: 8px; width: 0; height: 0; }
-    .cam { left: 0; transform: translateX(-1px); }
-    .cam svg {
-      width: 16px; height: 16px; display: block;
-      transform: translate(-2px, -2px);
-      color: var(--fg-dim);
-    }
-    .cam svg circle { fill: var(--screen); }
-    .mark { transform: translateX(-50%); }
+    .mark { position: absolute; top: 10px; width: 0; height: 0; transform: translateX(-50%); }
     .mark::before {
       content: "";
       display: block;
@@ -285,11 +277,34 @@
       background: var(--fg-bright);
       box-shadow: none;
     }
+    .zone-lbl {
+      position: absolute;
+      top: 1px;
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: var(--fg-bright);
+      font-variant-numeric: slashed-zero tabular-nums;
+      font-feature-settings: "zero" 1;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      text-shadow: 0 0 6px var(--glow);
+    }
+    .zone-lbl[hidden] { display: none !important; }
+    .zone-lbl.edge-mid { transform: translateX(-50%); }
+    .zone-lbl.edge-left { transform: translateX(0); }
+    .zone-lbl.edge-right { transform: translateX(-100%); }
+    .zone-lbl.below {
+      top: auto;
+      bottom: 0;
+    }
     .scale {
       display: flex;
       justify-content: space-between;
-      font-size: 0.62rem;
+      font-size: 0.56rem;
       color: var(--fg-dim);
+      opacity: 0.48;
       font-variant-numeric: slashed-zero tabular-nums;
       font-feature-settings: "zero" 1;
       margin-top: 2px;
@@ -334,6 +349,11 @@
       font-variant-numeric: slashed-zero tabular-nums;
       font-feature-settings: "zero" 1;
       box-shadow: none;
+    }
+    .num::placeholder,
+    .num::-webkit-input-placeholder {
+      color: var(--fg-bright);
+      opacity: 1;
     }
     .num:focus {
       outline: none;
@@ -584,14 +604,10 @@
 
       <div class="visual" aria-hidden="true">
         <div class="track-wrap">
-          <div class="cam">
-            <svg viewBox="0 0 16 16">
-              <path d="M2 6.5h3.2L6.4 5h3.2L11 6.5H14v6.2H2z" fill="currentColor" stroke="none"></path>
-              <circle cx="8" cy="9.4" r="1.7" fill="var(--bg-elev)" stroke="none"></circle>
-            </svg>
-          </div>
           <div class="track"><div class="zone" id="zone"></div></div>
           <div class="mark" id="focusMark"></div>
+          <div class="zone-lbl" id="zoneNearLbl" hidden></div>
+          <div class="zone-lbl" id="zoneFarLbl" hidden></div>
         </div>
         <div class="scale">
           <span>0</span>
@@ -602,7 +618,7 @@
 
       <div class="metrics">
         <div class="metric">
-          <span class="lbl">ГРИП</span>
+          <span class="lbl">Глубина резкости</span>
           <div class="val" id="outTotal">—</div>
         </div>
         <div class="metric">
@@ -633,7 +649,7 @@
           <label for="aperture">Диафрагма</label>
           <div class="row-input" id="apertureValueWrap">
             <span class="unit" style="margin-right:6px;margin-left:0">f/</span>
-            <select id="aperture" aria-label="Диафрагма" style="width:7.2rem;height:36px"></select>
+            <select id="aperture" aria-label="Диафрагма" style="width:8.4rem;height:36px"></select>
           </div>
         </div>
         <input type="range" id="apertureRange" min="0" max="36" step="1" value="9" aria-label="Диафрагма, ступенями">
@@ -694,10 +710,50 @@
   </div>
 
   <script>
-    const STOPS = [
-      1, 1.1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.5, 2.8, 3.2, 3.5, 4, 4.5, 5,
-      5.6, 6.3, 7.1, 8, 9, 10, 11, 13, 14, 16, 18, 20, 22, 25, 29, 32, 36, 40, 45, 51, 57, 64
-    ];
+    const STOP_MARKS = {
+      0: "1", 3: "1,4", 6: "2", 9: "2,8", 12: "4",
+      15: "5,6", 18: "8", 21: "11", 24: "16", 27: "22", 30: "32"
+    };
+
+    function cineStopLabel(k) {
+      const rem = k % 3;
+      const mark = STOP_MARKS[k - rem];
+      if (rem === 0) return mark;
+      return mark + (rem === 1 ? "\u2153" : "\u2154");
+    }
+
+    const STOPS = [];
+    for (let k = 0; k <= 30; k++) {
+      STOPS.push({ k, N: Math.pow(2, k / 6), label: cineStopLabel(k) });
+    }
+
+    function stopIndexByValue(n) {
+      let best = 0, bestD = Infinity;
+      for (let i = 0; i < STOPS.length; i++) {
+        const d = Math.abs(STOPS[i].N - n);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return best;
+    }
+
+    function stopIndexFromValue(raw) {
+      if (raw == null || raw === "") return -1;
+      const s = String(raw);
+      const tm = /^t(\d+)$/.exec(s);
+      if (tm) {
+        const k = Number(tm[1]);
+        return STOPS.findIndex((st) => st.k === k);
+      }
+      const n = parseNum(s);
+      if (Number.isFinite(n) && n > 0) return stopIndexByValue(n);
+      return -1;
+    }
+
+    function applyApertureIndex(idx) {
+      const i = clamp(idx, 0, STOPS.length - 1);
+      el.aperture.value = "t" + STOPS[i].k;
+      el.apertureRange.value = String(i);
+    }
 
     const CAMERAS = [
       {
@@ -883,6 +939,8 @@
       focusMark: $("focusMark"),
       scaleMid: $("scaleMid"),
       scaleEnd: $("scaleEnd"),
+      zoneNearLbl: $("zoneNearLbl"),
+      zoneFarLbl: $("zoneFarLbl"),
       themeToggle: $("themeToggle"),
       iconMoon: $("iconMoon"),
       iconSun: $("iconSun"),
@@ -920,11 +978,10 @@
     }
 
     function populateSelects() {
-      el.aperture.innerHTML = STOPS.map((n) => `<option value="${n}">${formatStop(n)}</option>`).join("")
+      el.aperture.innerHTML = STOPS.map((s) => `<option value="t${s.k}">${s.label}</option>`).join("")
         + '<option value="custom">Другое…</option>';
-      el.aperture.value = "2.8";
+      applyApertureIndex(STOPS.findIndex((s) => s.k === 9));
       el.apertureRange.max = String(STOPS.length - 1);
-      el.apertureRange.value = String(STOPS.indexOf(2.8));
       el.camera.innerHTML = CAMERAS.map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
       el.camera.value = "other";
       fillModes("other", "ff");
@@ -989,7 +1046,9 @@
 
     function currentAperture() {
       if (el.aperture.value === "custom") return parseNum(el.apertureCustom.value);
-      return parseNum(el.aperture.value);
+      const idx = stopIndexFromValue(el.aperture.value);
+      if (idx >= 0) return STOPS[idx].N;
+      return NaN;
     }
 
     function currentSelection() {
@@ -1042,6 +1101,28 @@
       updateFormatMeta();
     }
 
+    function formatZoneLabel(m) {
+      if (!Number.isFinite(m)) return "\u221e";
+      const abs = Math.abs(m);
+      let decimals;
+      if (abs >= 1000) decimals = 0;
+      else if (abs >= 100) decimals = 1;
+      else if (abs >= 1) decimals = 2;
+      else decimals = 3;
+      let n = m.toFixed(decimals);
+      if (abs >= 1) n = n.replace(/\.?0+$/, "");
+      return n.replace(".", ",");
+    }
+
+    function placeZoneLabel(node, pct) {
+      node.hidden = false;
+      node.style.left = pct + "%";
+      node.classList.remove("edge-left", "edge-right", "edge-mid", "below");
+      if (pct <= 6) node.classList.add("edge-left");
+      else if (pct >= 94) node.classList.add("edge-right");
+      else node.classList.add("edge-mid");
+    }
+
     function updateVisual(res) {
       const farIsInf = !Number.isFinite(res.far);
       const max = farIsInf ? Math.max(res.s * 2, res.H * 1.15, 1) : Math.max(res.far * 1.2, res.s * 1.15, 0.5);
@@ -1053,7 +1134,14 @@
       el.zone.style.borderRadius = farIsInf ? "99px 0 0 99px" : "99px";
       el.focusMark.style.left = pct(res.s) + "%";
       el.scaleMid.textContent = formatMeters(max / 2);
-      el.scaleEnd.textContent = farIsInf ? "∞" : formatMeters(max);
+      el.scaleEnd.textContent = farIsInf ? "\u221e" : formatMeters(max);
+      el.zoneNearLbl.textContent = formatZoneLabel(res.near);
+      el.zoneFarLbl.textContent = formatZoneLabel(res.far);
+      placeZoneLabel(el.zoneNearLbl, left);
+      placeZoneLabel(el.zoneFarLbl, right);
+      const nr = el.zoneNearLbl.getBoundingClientRect();
+      const fr = el.zoneFarLbl.getBoundingClientRect();
+      if (nr.right + 4 > fr.left && nr.left < fr.right) el.zoneFarLbl.classList.add("below");
     }
 
     function render() {
@@ -1071,6 +1159,8 @@
         el.outTotal.textContent = "—";
         el.outHyperfocal.textContent = "—";
         el.outSplit.textContent = "—";
+        el.zoneNearLbl.hidden = true;
+        el.zoneFarLbl.hidden = true;
         return;
       }
 
@@ -1130,11 +1220,12 @@
         el.focal.value = data.focal;
         el.focalRange.value = String(clamp(parseNum(data.focal), 8, 400));
       }
-      if (data.aperture && (data.aperture === "custom" || STOPS.includes(parseNum(data.aperture)))) {
-        el.aperture.value = data.aperture;
-        if (data.aperture !== "custom") {
-          const idx = STOPS.indexOf(parseNum(data.aperture));
-          if (idx >= 0) el.apertureRange.value = String(idx);
+      if (data.aperture) {
+        if (data.aperture === "custom") {
+          el.aperture.value = "custom";
+        } else {
+          const idx = stopIndexFromValue(data.aperture);
+          if (idx >= 0) applyApertureIndex(idx);
         }
       }
       if (data.apertureCustom) el.apertureCustom.value = data.apertureCustom;
@@ -1181,14 +1272,13 @@
       el.aperture.addEventListener("change", () => {
         syncCustomVisibility();
         if (el.aperture.value !== "custom") {
-          const idx = STOPS.indexOf(parseNum(el.aperture.value));
+          const idx = stopIndexFromValue(el.aperture.value);
           if (idx >= 0) el.apertureRange.value = String(idx);
         }
         render();
       });
       el.apertureRange.addEventListener("input", () => {
-        const idx = Number(el.apertureRange.value);
-        el.aperture.value = String(STOPS[idx]);
+        applyApertureIndex(Number(el.apertureRange.value));
         syncCustomVisibility();
         render();
       });
