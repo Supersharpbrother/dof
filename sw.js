@@ -1,4 +1,4 @@
-const CACHE = "dof-grip-v8";
+const CACHE = "dof-grip-v9";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,8 +8,6 @@ const ASSETS = [
   "./icon-512.png",
   "./mira.svg",
   "./mira.pdf",
-  "./preview-aperture/",
-  "./preview-aperture/index.html",
   "./fonts/IBMPlexMono-Regular.woff",
   "./fonts/IBMPlexMono-SemiBold.woff",
 ];
