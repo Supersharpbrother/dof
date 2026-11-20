@@ -1,6 +1,6 @@
 {
-  "name": "Глубина резкости",
-  "short_name": "ГРИП",
+  "name": "DoF",
+  "short_name": "DoF",
   "description": "Калькулятор глубины резкости изображаемого пространства",
   "start_url": "./index.html",
   "scope": "./",

@@ -7,9 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="statusBarMeta">
-  <meta name="apple-mobile-web-app-title" content="Глубина резкости">
+  <meta name="apple-mobile-web-app-title" content="DoF">
   <meta name="description" content="Калькулятор глубины резкости изображаемого пространства">
-  <title>Глубина резкости</title>
+  <title>DoF</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=12">
@@ -1680,7 +1680,7 @@
 
       const registerAndUpdate = () => {
         navigator.serviceWorker
-          .register("./sw.js?v=12", { updateViaCache: "none" })
+          .register("./sw.js?v=13", { updateViaCache: "none" })
           .then((reg) => { reg.update().catch(() => {}); })
           .catch(() => {});
       };
