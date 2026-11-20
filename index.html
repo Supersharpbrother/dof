@@ -11,8 +11,8 @@
   <meta name="description" content="Калькулятор глубины резкости изображаемого пространства">
   <title>Глубина резкости</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=10">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=10">
   <link rel="preload" href="fonts/IBMPlexMono-Regular.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="fonts/IBMPlexMono-SemiBold.woff" as="font" type="font/woff" crossorigin>
   <style>
@@ -422,14 +422,6 @@
       line-height: 1.35;
       color: var(--fg-bright);
     }
-    .format-note {
-      margin: 4px 0 0;
-      font-size: 0.64rem;
-      color: var(--fg-dim);
-      line-height: 1.4;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
     .custom-row {
       display: none;
       margin-top: 8px;
@@ -791,7 +783,6 @@
         <label class="sub-label" for="mode">Режим</label>
         <select id="mode"></select>
         <div class="format-meta" id="formatMeta">—</div>
-        <p class="format-note" id="formatNote">Кружок нерезкости для режимов камеры: диагональ активной области / 1500.</p>
         <div class="custom-row on" id="customCocRow">
           <label for="coc">Свой CoC</label>
           <div class="row-input">
@@ -1042,7 +1033,6 @@
       coc: $("coc"),
       customCocRow: $("customCocRow"),
       formatMeta: $("formatMeta"),
-      formatNote: $("formatNote"),
       outNear: $("outNear"),
       outFar: $("outFar"),
       outFocus: $("outFocus"),
@@ -1190,15 +1180,6 @@
         el.formatMeta.textContent = `${formatMm(mode.w)} × ${formatMm(mode.h)}\u00a0мм  ·  CoC ${cocTxt}`;
       } else {
         el.formatMeta.textContent = `CoC ${cocTxt}`;
-      }
-      if (camera.generic && mode.coc != null) {
-        el.formatNote.textContent = "Для форматов в группе «Другое» сохранены классические значения кружка нерезкости. Их можно заменить полем «Свой CoC».";
-      } else if (mode.id === "custom") {
-        el.formatNote.textContent = "Введите кружок нерезкости вручную.";
-      } else if (mode.derived) {
-        el.formatNote.textContent = "Кружок нерезкости = диагональ активной области / 1500. Размер этого режима получен масштабированием официальной области 8K 17:9.";
-      } else {
-        el.formatNote.textContent = "Кружок нерезкости для режимов камеры: диагональ активной области / 1500.";
       }
       el.customCocRow.classList.add("on");
       if (mode.id === "custom" && !el.coc.value) {
