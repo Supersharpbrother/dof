@@ -1,4 +1,4 @@
-const CACHE = "dof-grip-v11";
+const CACHE = "dof-grip-v12";
 const PRECACHE = [
   "./",
   "./index.html",

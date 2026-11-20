@@ -11,8 +11,8 @@
   <meta name="description" content="Калькулятор глубины резкости изображаемого пространства">
   <title>Глубина резкости</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=11">
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=11">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=12">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=12">
   <link rel="preload" href="fonts/IBMPlexMono-Regular.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="fonts/IBMPlexMono-SemiBold.woff" as="font" type="font/woff" crossorigin>
   <style>
@@ -200,7 +200,9 @@
       padding: 0;
       box-shadow: none;
     }
-    .icon-btn:active {
+    .icon-btn:active,
+    .icon-btn:focus-visible {
+      outline: none;
       background: var(--fill-press);
       border-color: var(--fg);
     }
@@ -328,6 +330,9 @@
       border: 1px solid var(--line);
       background: var(--input);
       color: var(--fg-bright);
+      -webkit-text-fill-color: var(--fg-bright);
+      caret-color: var(--fg-bright);
+      accent-color: var(--fg);
       border-radius: var(--radius-sm);
       text-align: right;
       padding: 0 10px;
@@ -337,10 +342,18 @@
       font-variant-numeric: slashed-zero tabular-nums;
       font-feature-settings: "zero" 1;
       box-shadow: none;
+      -moz-appearance: textfield;
+    }
+    .num::-webkit-outer-spin-button,
+    .num::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
     }
     .num::placeholder,
     .num::-webkit-input-placeholder {
       color: var(--fg-bright);
+      -webkit-text-fill-color: var(--fg-bright);
       opacity: 1;
     }
     .num:focus {
@@ -348,7 +361,21 @@
       border-color: var(--fg);
       background: var(--fill);
     }
-    .unit { margin-left: 4px; color: var(--fg-dim); font-size: 0.72rem; text-transform: uppercase; }
+    .num:-webkit-autofill,
+    .num:-webkit-autofill:hover,
+    .num:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--fg-bright);
+      caret-color: var(--fg-bright);
+      box-shadow: 0 0 0 40px var(--input) inset;
+      transition: background-color 9999s ease-out;
+    }
+    .unit {
+      margin-left: 4px;
+      color: var(--fg);
+      -webkit-text-fill-color: var(--fg);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
     .row-input { display: flex; align-items: center; }
 
     input[type="range"] {
@@ -358,6 +385,7 @@
       height: 28px;
       background: transparent;
       margin: 0;
+      accent-color: var(--fg);
     }
     input[type="range"]::-webkit-slider-runnable-track {
       height: 6px;
@@ -393,25 +421,54 @@
       box-shadow: none;
     }
 
+    .select-wrap {
+      position: relative;
+      display: block;
+    }
+    .select-chevron {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 11px;
+      height: 15px;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--fg);
+      fill: currentColor;
+    }
+    .select-wrap:focus-within .select-chevron {
+      color: var(--fg-bright);
+    }
     select {
       width: 100%;
       height: 40px;
       border: 1px solid var(--line);
-      background: var(--fill);
+      background-color: var(--fill);
       color: var(--fg);
+      -webkit-text-fill-color: var(--fg);
+      caret-color: var(--fg-bright);
+      accent-color: var(--fg);
       border-radius: var(--radius-sm);
-      padding: 0 10px;
+      padding: 0 32px 0 10px;
       font-size: 16px;
       font-family: inherit;
       font-feature-settings: "zero" 1;
       font-variant-numeric: slashed-zero;
       box-shadow: none;
+      -webkit-appearance: none;
+      appearance: none;
     }
+    select::-ms-expand { display: none; }
     select:focus {
       outline: none;
       border-color: var(--fg);
-      background: var(--fill-press);
+      background-color: var(--fill-press);
       color: var(--fg-bright);
+      -webkit-text-fill-color: var(--fg-bright);
+    }
+    select option {
+      background-color: var(--panel);
+      color: var(--fg);
     }
 
     .format-meta {
@@ -779,9 +836,21 @@
 
       <div class="field">
         <label class="sub-label" for="camera" style="margin-top:0">Камера</label>
-        <select id="camera"></select>
+        <div class="select-wrap">
+          <select id="camera"></select>
+          <svg class="select-chevron" viewBox="0 0 12 16" aria-hidden="true" focusable="false">
+            <path d="M2 6 L6 2 L10 6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 10 L6 14 L10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <label class="sub-label" for="mode">Режим</label>
-        <select id="mode"></select>
+        <div class="select-wrap">
+          <select id="mode"></select>
+          <svg class="select-chevron" viewBox="0 0 12 16" aria-hidden="true" focusable="false">
+            <path d="M2 6 L6 2 L10 6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 10 L6 14 L10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
         <div class="format-meta" id="formatMeta">—</div>
         <div class="custom-row on" id="customCocRow">
           <label for="coc">Свой CoC</label>
@@ -1611,7 +1680,7 @@
 
       const registerAndUpdate = () => {
         navigator.serviceWorker
-          .register("./sw.js?v=11", { updateViaCache: "none" })
+          .register("./sw.js?v=12", { updateViaCache: "none" })
           .then((reg) => { reg.update().catch(() => {}); })
           .catch(() => {});
       };
