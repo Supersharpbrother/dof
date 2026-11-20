@@ -299,18 +299,6 @@
       top: auto;
       bottom: 0;
     }
-    .scale {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.56rem;
-      color: var(--fg-dim);
-      opacity: 0.48;
-      font-variant-numeric: slashed-zero tabular-nums;
-      font-feature-settings: "zero" 1;
-      margin-top: 2px;
-      padding: 0 1px;
-    }
-
     .metrics {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -609,11 +597,6 @@
           <div class="zone-lbl" id="zoneNearLbl" hidden></div>
           <div class="zone-lbl" id="zoneFarLbl" hidden></div>
         </div>
-        <div class="scale">
-          <span>0</span>
-          <span id="scaleMid"></span>
-          <span id="scaleEnd"></span>
-        </div>
       </div>
 
       <div class="metrics">
@@ -910,8 +893,10 @@
 
     const DIST_MIN = 0.2;
     const DIST_MAX = 200;
-    const STORAGE_KEY = "dof-grip-v2";
-    const LEGACY_KEY = "dof-grip-v1";
+    const STORAGE_KEY = "dof-grip-v3";
+    const LEGACY_KEYS = ["dof-grip-v2", "dof-grip-v1"];
+    const DEFAULT_CAMERA = "alexa-35";
+    const DEFAULT_MODE = "og-46";
 
     const $ = (id) => document.getElementById(id);
     const el = {
@@ -937,8 +922,6 @@
       outSplit: $("outSplit"),
       zone: $("zone"),
       focusMark: $("focusMark"),
-      scaleMid: $("scaleMid"),
-      scaleEnd: $("scaleEnd"),
       zoneNearLbl: $("zoneNearLbl"),
       zoneFarLbl: $("zoneFarLbl"),
       themeToggle: $("themeToggle"),
@@ -983,8 +966,8 @@
       applyApertureIndex(STOPS.findIndex((s) => s.k === 9));
       el.apertureRange.max = String(STOPS.length - 1);
       el.camera.innerHTML = CAMERAS.map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
-      el.camera.value = "other";
-      fillModes("other", "ff");
+      el.camera.value = DEFAULT_CAMERA;
+      fillModes(DEFAULT_CAMERA, DEFAULT_MODE);
     }
 
     function fillModes(cameraId, modeId) {
@@ -1133,8 +1116,6 @@
       el.zone.style.width = Math.max(0.8, right - left) + "%";
       el.zone.style.borderRadius = farIsInf ? "99px 0 0 99px" : "99px";
       el.focusMark.style.left = pct(res.s) + "%";
-      el.scaleMid.textContent = formatMeters(max / 2);
-      el.scaleEnd.textContent = farIsInf ? "\u221e" : formatMeters(max);
       el.zoneNearLbl.textContent = formatZoneLabel(res.near);
       el.zoneFarLbl.textContent = formatZoneLabel(res.far);
       placeZoneLabel(el.zoneNearLbl, left);
@@ -1191,20 +1172,31 @@
 
     function readStored() {
       try {
-        const v2 = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (v2) return v2;
+        const cur = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (cur) return cur;
       } catch (_) {}
-      try {
-        const v1 = JSON.parse(localStorage.getItem(LEGACY_KEY) || "null");
-        if (!v1) return null;
-        const known = ["ff", "aps-c-15", "aps-c-16", "m43", "mf4433", "custom"];
-        return {
-          ...v1,
-          camera: "other",
-          mode: known.includes(v1.sensor) ? v1.sensor : "ff",
-          cocOverride: v1.sensor === "custom" ? v1.coc : "",
-        };
-      } catch (_) {}
+      for (const key of LEGACY_KEYS) {
+        try {
+          const raw = JSON.parse(localStorage.getItem(key) || "null");
+          if (!raw) continue;
+          let data = raw;
+          if (key === "dof-grip-v1") {
+            const known = ["ff", "aps-c-15", "aps-c-16", "m43", "mf4433", "custom"];
+            data = {
+              ...raw,
+              camera: "other",
+              mode: known.includes(raw.sensor) ? raw.sensor : "ff",
+              cocOverride: raw.sensor === "custom" ? raw.coc : "",
+            };
+          }
+          return {
+            ...data,
+            camera: DEFAULT_CAMERA,
+            mode: DEFAULT_MODE,
+            cocOverride: "",
+          };
+        } catch (_) {}
+      }
       return null;
     }
 
@@ -1331,8 +1323,7 @@
       }
 
       el.miraOpen.addEventListener("click", openMira);
-      el.miraClose.addEventListener("click", (ev) => { ev.stopPropagation(); closeMira(); });
-      el.miraOverlay.addEventListener("click", closeMira);
+      el.miraClose.addEventListener("click", (ev) => { ev.stopPropagation(); ev.preventDefault(); closeMira(); });
       document.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape" && !el.miraOverlay.hidden) closeMira();
       });
