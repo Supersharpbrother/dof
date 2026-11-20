@@ -148,7 +148,7 @@
 
     header {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 12px;
@@ -432,16 +432,6 @@
     .custom-row.on { display: flex; }
     .custom-row label { text-transform: uppercase; font-size: 0.66rem; color: var(--fg-dim); letter-spacing: 0.08em; }
 
-    .hint {
-      margin: 10px 2px 0;
-      font-size: 0.64rem;
-      color: var(--fg-dim);
-      line-height: 1.45;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
     ::selection { background: var(--fg); color: var(--bg); }
 
     .header-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
@@ -514,7 +504,7 @@
     .mira-close:active { background: rgba(255, 255, 255, 0.95); }
 
     .credit {
-      margin: 14px 2px 0;
+      margin: 10px 14px 0;
       font-size: 0.64rem;
       letter-spacing: 0.03em;
       color: var(--fg-dim);
@@ -555,10 +545,15 @@
     <header>
       <div class="brand">
         <h1>Глубина резкости<span class="cursor" aria-hidden="true"></span></h1>
-        <p>Калькулятор ГРИП</p>
       </div>
       <div class="header-actions">
-        <button type="button" class="text-btn" id="miraOpen">Мира</button>
+        <button type="button" class="icon-btn" id="miraOpen" aria-label="Мира">
+          <svg class="pictogram" viewBox="0 0 24 24" aria-hidden="true">
+            <rect class="ring" x="2.2" y="2.2" width="19.6" height="19.6" rx="3"></rect>
+            <path d="M12,12 L12,4.7 L14.7936,5.2557 Z M12,12 L17.1619,6.8381 L18.7443,9.2064 Z M12,12 L19.3,12 L18.7443,14.7936 Z M12,12 L17.1619,17.1619 L14.7936,18.7443 Z M12,12 L12,19.3 L9.2064,18.7443 Z M12,12 L6.8381,17.1619 L5.2557,14.7936 Z M12,12 L4.7,12 L5.2557,9.2064 Z M12,12 L6.8381,6.8381 L9.2064,5.2557 Z"></path>
+            <circle cx="12" cy="12" r="0.7" fill="currentColor"></circle>
+          </svg>
+        </button>
         <button type="button" class="icon-btn" id="themeToggle" aria-label="Включить светлую тему">
           <svg id="iconMoon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M21 14.3A8.2 8.2 0 0 1 9.7 3 8.4 8.4 0 1 0 21 14.3z"></path>
@@ -679,10 +674,6 @@
       </div>
     </section>
 
-    <p class="hint">
-      Добавьте на экран «Домой» в Safari через «Поделиться».
-      Приложение запоминает последние значения и работает без интернета.
-    </p>
     <p class="credit">
       <a href="https://t.me/SuperSharpBrother" target="_blank" rel="noopener noreferrer">@SuperSharpBrother</a>
     </p>

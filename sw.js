@@ -1,4 +1,4 @@
-const CACHE = "dof-grip-v5";
+const CACHE = "dof-grip-v6";
 const ASSETS = [
   "./",
   "./index.html",
